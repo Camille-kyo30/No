@@ -2,14 +2,13 @@ module.exports = {
   config: {
     name: "join",
     version: "3.1",
-    author: "Christus",
+    author: "Camille-Dev 🩵",
     countDown: 5,
     role: 2,
-    dev: true,
-    shortDescription: "Rejoindre un groupe dans lequel le bot est présent",
-    longDescription: "Liste paginée des groupes, répondre avec un numéro pour rejoindre, supporte le passage direct à une page ou suivant/précédent.",
-    category: "owner",
-    guide: { en: "{p}{n} [page|next|prev]" },
+    shortDescription: "S'infiltrer dans un quartier (groupe) où le bot est présent",
+    longDescription: "Affiche la liste des quartiers disponibles. Réponds avec le numéro pour que Camille t'ajoute.",
+    category: "propriétaire",
+    guide: { fr: "{p}{n} [page|next|prev]" },
   },
 
   onStart: async function ({ api, event, args }) {
@@ -17,7 +16,7 @@ module.exports = {
       const groupList = await api.getThreadList(200, null, ["INBOX"]);
       const filteredList = groupList.filter(g => g.isGroup && g.isSubscribed);
 
-      if (!filteredList.length) return api.sendMessage("❌ Aucun groupe trouvé.", event.threadID);
+      if (!filteredList.length) return api.sendMessage("❌ Aucun quartier trouvé. Le bot est au chômage.", event.threadID);
 
       const pageSize = 15;
       const totalPages = Math.ceil(filteredList.length / pageSize);
@@ -29,7 +28,6 @@ module.exports = {
         const input = args[0].toLowerCase();
         if (input === "next") page = (global.joinPage[currentThread] || 1) + 1;
         else if (input === "prev") page = (global.joinPage[currentThread] || 1) - 1;
-        else if (input.includes("/")) page = parseInt(input.split("/")[0]) || 1;
         else page = parseInt(input) || 1;
       }
 
@@ -41,20 +39,20 @@ module.exports = {
       const currentGroups = filteredList.slice(startIndex, startIndex + pageSize);
 
       const formatted = currentGroups.map((g, i) =>
-        `┃ ${startIndex + i + 1}. 『${g.threadName || "Groupe sans nom"}』\n┃ 👥 ${g.participantIDs.length} membres\n┃ 🆔 ${g.threadID}\n┃`
+        `┃ ${startIndex + i + 1}. 『 ${g.threadName || "Quartier sans nom"} 』\n┃ 👥 ${g.participantIDs.length} mogos\n┃ 🆔 ${g.threadID}\n┃`
       );
 
       const message = [
-        "╭─────────────❃",
-        "│ 🤝 REJOINDRE UN GROUPE",
-        "│──────────────────",
+        "┏━━━━━ 🤝 𝗜𝗡𝗙𝗜𝗟𝗧𝗥𝗔𝗧𝗜𝗢𝗡 ━━━━━┓",
+        "  𝗖𝗔𝗠𝗜𝗟𝗟𝗘 𝗧'𝗢𝗨𝗩𝗥𝗘 𝗟𝗔 𝗣𝗢𝗥𝗧𝗘 🇨🇮",
+        "┗━━━━━━━━━━━━━━━━━━━━━━┛",
         formatted.join("\n"),
-        "│──────────────────",
-        `│ 📄 Page ${page}/${totalPages} | Total: ${filteredList.length} groupes`,
-        "│ 📌 Maximum de membres par groupe : 250",
-        "╰───────────────✦",
+        "──────────────────────",
+        `📄 Page ${page}/${totalPages} | Total: ${filteredList.length} quartiers`,
+        "📌 Note : Si le quartier est gâté (250+), on n'entre pas.",
+        "──────────────────────",
         "",
-        "👉 Répondez avec le numéro du groupe que vous voulez rejoindre."
+        "👉 Réponds avec le numéro du quartier pour que je t'ajoute !"
       ].join("\n");
 
       const sentMessage = await api.sendMessage(message, event.threadID);
@@ -68,8 +66,7 @@ module.exports = {
       });
 
     } catch (e) {
-      console.error(e);
-      api.sendMessage("⚠️ Erreur lors de la récupération de la liste des groupes.", event.threadID);
+      api.sendMessage("⚠️ Camille a un drap pour fouiller les quartiers.", event.threadID);
     }
   },
 
@@ -79,14 +76,14 @@ module.exports = {
 
     const groupIndex = parseInt(args[0], 10);
     if (isNaN(groupIndex) || groupIndex <= 0) {
-      return api.sendMessage("⚠️ Numéro invalide. Répondez avec un numéro de groupe valide.", event.threadID, event.messageID);
+      return api.sendMessage("⚠️ Ahiii ! Donne un vrai chiffre mogo.", event.threadID, event.messageID);
     }
 
     const startIndex = (page - 1) * pageSize;
     const currentGroups = list.slice(startIndex, startIndex + pageSize);
 
     if (groupIndex > currentGroups.length) {
-      return api.sendMessage("⚠️ Numéro hors de portée pour cette page.", event.threadID, event.messageID);
+      return api.sendMessage("⚠️ Ce numéro n'est pas sur cette page, ne bluffe pas.", event.threadID, event.messageID);
     }
 
     try {
@@ -95,18 +92,17 @@ module.exports = {
       const members = await api.getThreadInfo(groupID);
 
       if (members.participantIDs.includes(event.senderID)) {
-        return api.sendMessage(`⚠️ Vous êtes déjà dans 『${selected.threadName}』`, event.threadID, event.messageID);
+        return api.sendMessage(`⚠️ Tu es déjà dans le quartier 『${selected.threadName}』 !`, event.threadID, event.messageID);
       }
       if (members.participantIDs.length >= 250) {
-        return api.sendMessage(`🚫 Groupe complet : 『${selected.threadName}』`, event.threadID, event.messageID);
+        return api.sendMessage(`🚫 Le quartier 『${selected.threadName}』 est déjà plein, on ne peut plus se mélanger.`, event.threadID, event.messageID);
       }
 
       await api.addUserToGroup(event.senderID, groupID);
-      api.sendMessage(`✅ Vous avez rejoint 『${selected.threadName}』`, event.threadID, event.messageID);
+      api.sendMessage(`✅ C'est fait ! Camille t'a balancé dans 『${selected.threadName}』. Fais ton show ! 🕺`, event.threadID, event.messageID);
 
     } catch (e) {
-      console.error(e);
-      api.sendMessage("⚠️ Échec de l'ajout au groupe. Veuillez réessayer plus tard.", event.threadID, event.messageID);
+      api.sendMessage("❌ Le videur a refusé ton entrée. (Erreur d'ajout)", event.threadID, event.messageID);
     } finally {
       global.GoatBot.onReply.delete(event.messageID);
     }
