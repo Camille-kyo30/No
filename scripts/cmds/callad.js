@@ -5,46 +5,33 @@ module.exports = {
     config: {
         name: "callad",
         version: "1.7",
-        author: "Christus",
+        author: "Camille 🇨🇮",
         countDown: 5,
         role: 0,
         description: {
-            fr: "📨 Envoyez vos rapports, suggestions ou bugs directement aux administrateurs du bot",
-            en: "📨 Send reports, feedbacks, or bugs directly to bot admins"
+            fr: "📨 Signaler un drap ou envoyer un message aux Vieux Pères (Admins)",
+            en: "📨 Send reports or bugs directly to bot admins"
         },
         category: "contacts admin",
         guide: {
-            fr: "📌 Usage : {pn} <votre message>",
+            fr: "📌 Usage : {pn} <ton message pimenté>",
             en: "📌 Usage: {pn} <your message>"
         }
     },
 
     langs: {
         fr: {
-            missingMessage: "❌ Veuillez écrire le message que vous souhaitez envoyer aux admins !",
-            sendByGroup: "\n- Envoyé depuis le groupe : %1\n- Thread ID : %2",
-            sendByUser: "\n- Envoyé par l'utilisateur",
-            content: "\n\n💬 Contenu du message :\n────────────────────────────\n%1\n────────────────────────────\n💡 Répondez à ce message pour envoyer un retour à l'utilisateur",
-            success: "✅ Votre message a été envoyé avec succès à %1 admin !\n%2",
-            failed: "❌ Une erreur est survenue lors de l'envoi à %1 admin\n%2\n📌 Vérifiez la console pour plus de détails",
-            reply: "📍 Réponse de l'admin %1 :\n────────────────────────────\n%2\n────────────────────────────\n💡 Répondez à ce message pour continuer la discussion avec l'admin",
-            replySuccess: "✅ Votre réponse a été envoyée avec succès à l'admin !",
-            feedback: "📝 Feedback de l'utilisateur %1 :\n- User ID : %2%3\n\n💬 Contenu :\n────────────────────────────\n%4\n────────────────────────────\n💡 Répondez à ce message pour envoyer votre retour à l'utilisateur",
-            replyUserSuccess: "✅ Votre réponse a été envoyée avec succès à l'utilisateur !",
-            noAdmin: "⚠️ Actuellement, aucun administrateur n'est disponible."
-        },
-        en: {
-            missingMessage: "❌ Please enter the message you want to send to admin!",
-            sendByGroup: "\n- Sent from group: %1\n- Thread ID: %2",
-            sendByUser: "\n- Sent from user",
-            content: "\n\n💬 Message content:\n────────────────────────────\n%1\n────────────────────────────\n💡 Reply to this message to send feedback to the user",
-            success: "✅ Your message has been successfully sent to %1 admin!\n%2",
-            failed: "❌ An error occurred while sending your message to %1 admin\n%2\n📌 Check console for details",
-            reply: "📍 Reply from admin %1:\n────────────────────────────\n%2\n────────────────────────────\n💡 Reply to this message to continue chatting with admin",
-            replySuccess: "✅ Your reply has been successfully sent to admin!",
-            feedback: "📝 Feedback from user %1:\n- User ID: %2%3\n\n💬 Content:\n────────────────────────────\n%4\n────────────────────────────\n💡 Reply to this message to send feedback to user",
-            replyUserSuccess: "✅ Your reply has been successfully sent to user!",
-            noAdmin: "⚠️ No admin is available at the moment."
+            missingMessage: "❌ Ahiii ! Tu m'appelles pour ne rien dire ? Écris ton message d'abord ! 🙄",
+            sendByGroup: "\n📍 Venu du quartier : %1\n🆔 ID du Groupe : %2",
+            sendByUser: "\n📍 Message en privé (DM)",
+            content: "\n\n💬 CE QU'IL DIT :\n────────────────────────────\n%1\n────────────────────────────\n💡 Vieux Père, réponds ici pour lui donner les nouvelles !",
+            success: "✅ C'est gâté ! Ton message a été livré à %1 admin(s) :\n%2\n\nFaut patienter, le mogo va te répondre. 🇨🇮",
+            failed: "❌ Y'a eu un petit dra lors de l'envoi à %1 admin(s)\n%2\n📌 Les fétiches du serveur sont forts aujourd'hui...",
+            reply: "📍 RÉPONSE DU VIEUX PÈRE %1 🇨🇮 :\n────────────────────────────\n%2\n────────────────────────────\n💡 Réponds ici pour continuer la palabre avec lui.",
+            replySuccess: "✅ C'est envoyé ! L'admin va lire ça maintenant.",
+            feedback: "📝 FEEDBACK DU PETIT %1 :\n🆔 User ID : %2%3\n\n💬 SON DOSSIER :\n────────────────────────────\n%4\n────────────────────────────\n💡 Réponds pour lui fermer la bouche ou l'aider !",
+            replyUserSuccess: "✅ C'est bon, le petit a reçu ta réponse. 🇨🇮🔥",
+            noAdmin: "⚠️ Actuellement, aucun chef n'est au quartier (aucun admin)."
         }
     },
 
@@ -58,9 +45,9 @@ module.exports = {
 
         const senderName = await usersData.getName(senderID);
 
-        const msgHeader = "==📨️ APPEL ADMIN 📨️=="
-            + `\n- Nom de l'utilisateur : ${senderName}`
-            + `\n- ID de l'utilisateur : ${senderID}`
+        const msgHeader = "╔══════ 🇨🇮 𝗦.𝗢.𝗦 𝗔𝗗𝗠𝗜𝗡 🇨🇮 ══════╗"
+            + `\n👤 𝗠𝗢𝗚𝗢 : ${senderName}`
+            + `\n🆔 𝗜𝗗 : ${senderID}`
             + (isGroup ? getLang("sendByGroup", (await threadsData.get(threadID)).threadName, threadID) : getLang("sendByUser"));
 
         const formMessage = {
@@ -98,16 +85,16 @@ module.exports = {
             }
         }
 
-        let resultMsg = "";
+        let resultMsg = "╚════════════════════════╝\n";
         if (successIDs.length > 0) {
             resultMsg += getLang("success", successIDs.length,
                 adminNames.filter(item => successIDs.includes(item.id))
-                    .map(item => ` <@${item.id}> (${item.name})`).join("\n")
+                    .map(item => ` ✨ <@${item.id}> (${item.name})`).join("\n")
             );
         }
         if (failedIDs.length > 0) {
-            resultMsg += getLang("failed", failedIDs.length,
-                failedIDs.map(item => ` <@${item.adminID}> (${adminNames.find(a => a.id === item.adminID)?.name || item.adminID})`).join("\n")
+            resultMsg += "\n" + getLang("failed", failedIDs.length,
+                failedIDs.map(item => ` ❌ <@${item.adminID}> (${adminNames.find(a => a.id === item.adminID)?.name || item.adminID})`).join("\n")
             );
             log.err("CALL ADMIN", failedIDs);
         }
@@ -177,3 +164,4 @@ module.exports = {
         }
     }
 };
+                                
