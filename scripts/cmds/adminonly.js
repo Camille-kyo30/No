@@ -5,36 +5,28 @@ const { client } = global;
 module.exports = {
 	config: {
 		name: "adminonly",
-		aliases: ["adonly", "onlyad", "onlyadmin"],
+		aliases: ["adonly", "onlyad", "onlyadmin", "vip"],
 		version: "1.5",
-		author: "NTKhang",
+		author: "Camille",
 		countDown: 5,
 		role: 3,
 		description: {
-			fr: "Activer ou désactiver le mode où seul l'admin peut utiliser le bot",
+			fr: "Bloquer le bot pour que seuls les chefs puissent parler",
 			en: "Turn on/off only admin can use bot"
 		},
 		category: "propriétaire",
 		guide: {
-			fr: "   {pn} [on | off] : activer/désactiver le mode où seul l'admin peut utiliser le bot"
-				+ "\n   {pn} noti [on | off] : activer/désactiver la notification quand un utilisateur non admin utilise le bot",
-			en: "   {pn} [on | off] : turn on/off the mode only admin can use bot"
-				+ "\n   {pn} noti [on | off] : turn on/off the notification when user is not admin use bot"
+			fr: "   {pn} [on | off] : Activer/couper le mode Carré VIP\n   {pn} noti [on | off] : Activer/couper les palabres du bot quand un petit touche à ça",
+			en: "   {pn} [on | off] : turn on/off the mode only admin can use bot\n   {pn} noti [on | off] : notification toggle"
 		}
 	},
 
 	langs: {
 		fr: {
-			turnedOn: "✅ Mode 'seul l'admin peut utiliser le bot' activé",
-			turnedOff: "✅ Mode 'seul l'admin peut utiliser le bot' désactivé",
-			turnedOnNoti: "✅ Notifications activées pour les utilisateurs non admin",
-			turnedOffNoti: "✅ Notifications désactivées pour les utilisateurs non admin"
-		},
-		en: {
-			turnedOn: "Turned on the mode only admin can use bot",
-			turnedOff: "Turned off the mode only admin can use bot",
-			turnedOnNoti: "Turned on the notification when user is not admin use bot",
-			turnedOffNoti: "Turned off the notification when user is not admin use bot"
+			turnedOn: "┏━━━━━ 🔒 ━━━━━┓\n   𝗠𝗢𝗗𝗘 𝗖𝗔𝗥𝗥𝗘́ 𝗩𝗜𝗣\n┗━━━━━ 🔒 ━━━━━┛\n\nC'est bouclé ! 🚪 Maintenant, seuls les vrais mogos (admins) peuvent me parler. Les gnatas sont au dehors ! ✋🏾",
+			turnedOff: "┏━━━━━ 🔓 ━━━━━┓\n   𝗠𝗢𝗗𝗘 𝗣𝗨𝗕𝗟𝗜𝗖\n┗━━━━━ 🔓 ━━━━━┛\n\nC'est libéré ! 🎉 Tout le quartier peut s'amuser avec moi maintenant. On est ensemble !",
+			turnedOnNoti: "🔔 [𝗜𝗡𝗙𝗢]\n\nMaintenant, si un petit mogo essaie de m'utiliser sans permission, je vais lui crier dessus proprement ! 🗣️",
+			turnedOffNoti: "🔕 [𝗜𝗡𝗙𝗢]\n\nJe vais rester calme. Si un non-admin me touche, je l'ignore seulement, pas de palabres. 🤐"
 		}
 	},
 
