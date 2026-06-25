@@ -3,10 +3,15 @@ const fs = require("fs-extra");
 const path = require("path");
 
 const ownerInfo = {
-  name: "۝𝐶𝐻𝑅𝐼𝑆𝑇𝑈𝑆۝",
-  facebook: "https://www.facebook.com/Anos.Christus",
-  telegram: "ᏉᎾᏆᎧ ᎿᎬᏁ",
-  supportGroup: "🌝🌚"
+  name: "ʚʆɞ Camille Uchiha ʚʆɞ",
+  facebook: "https://www.facebook.com/profile.php?id=61577875842514",
+  telegram: "🌸 Camille Uchiha",
+  supportGroup: "🎀 Kawaii Support GC 🎀"
+};
+
+const editorInfo = {
+  name: "🎀 Mini Kawaii Editor 🎀",
+  note: "Made with love & anime vibes 💖✨"
 };
 
 module.exports = {
@@ -14,10 +19,11 @@ module.exports = {
     name: "botjoin",
     version: "2.0",
     author: "Saimx69x",
+    editor: editorInfo.name,
     category: "events"
   },
 
-  onStart: async function ({ event, api, message }) {
+  onStart: async function ({ event, api }) {
     if (event.logMessageType !== "log:subscribe") return;
 
     const { threadID, logMessageData } = event;
@@ -27,41 +33,42 @@ module.exports = {
     const isBotAdded = addedUsers.some(u => u.userFbId === botID);
     if (!isBotAdded) return;
 
-    const nickNameBot = global.GoatBot.config.nickNameBot || "Sakura Bot";
+    const nickNameBot = global.GoatBot.config.nickNameBot || "🎀 Sakura Chan Bot 🎀";
     const prefix = global.utils.getPrefix(threadID);
-    const BOT_UID = botID; 
 
     try {
-      
       await api.changeNickname(nickNameBot, threadID, botID);
     } catch (err) {
       console.warn("⚠️ Nickname change failed:", err.message);
     }
 
     try {
-      
-      const API_ENDPOINT = "https://xsaim8x-xxx-api.onrender.com/api/botjoin"; 
-      
-      const apiUrl = `${API_ENDPOINT}?botuid=${BOT_UID}&prefix=${encodeURIComponent(prefix)}`;
-      
+      const API_ENDPOINT = "https://xsaim8x-xxx-api.onrender.com/api/botjoin";
+      const apiUrl = `${API_ENDPOINT}?botuid=${botID}&prefix=${encodeURIComponent(prefix)}`;
+
       const tmpDir = path.join(__dirname, "..", "cache");
       await fs.ensureDir(tmpDir);
-      const imagePath = path.join(tmpDir, `botjoin_image_${threadID}.png`);
+      const imagePath = path.join(tmpDir, `botjoin_${threadID}.png`);
 
       const response = await axios.get(apiUrl, { responseType: "arraybuffer" });
       fs.writeFileSync(imagePath, response.data);
 
       const textMsg = [
-        "🎀 𝐓𝐡𝐚𝐧𝐤 𝐲𝐨𝐮 𝐟𝐨𝐫 𝐢𝐧𝐯𝐢𝐭𝐢𝐧𝐠 𝐦𝐞 🎀",
-        `🔹 𝐁𝐨𝐭 𝐩𝐫𝐞𝐟𝐢𝐱: ${prefix}`,
-        `🔸 𝐓𝐲𝐩𝐞: ${prefix}help 𝐭𝐨 𝐬𝐞𝐞 𝐚𝐥𝐥 𝐜𝐨𝐦𝐦𝐚𝐧𝐝𝐬`,
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-        `👑 𝐎𝐰𝐧𝐞𝐫: ${ownerInfo.name}`,
-        `🌐 𝐅𝐚𝐜𝐞𝐛𝐨𝐨𝐤: ${ownerInfo.facebook}`,
-        `✈️ 𝐓𝐞𝐥𝐞𝐠𝐫𝐚𝐦: ${ownerInfo.telegram}`,
-        `🤖 𝐉𝐨𝐢𝐧 𝐒𝐮𝐩𝐩𝐨𝐫𝐭 𝐆𝐂: ${ownerInfo.supportGroup}`
+        "🎀 𝐵𝑜𝑡 𝐽𝑜𝑖𝑛𝑒𝑑 ~ 𝐾𝑎𝑤𝑎𝑖𝑖 𝑀𝑜𝑑𝑒 🎀",
+        "",
+        `💠 𝐏𝐫𝐞𝐟𝐢𝐱 : ${prefix}`,
+        `✨ 𝐂𝐨𝐦𝐦𝐚𝐧𝐝 : ${prefix}help`,
+        "",
+        "━━━━━━━━━━ ✧ ✦ ✧ ━━━━━━━━━━",
+        `👑 𝐎𝐰𝐧𝐞𝐫 : ${ownerInfo.name}`,
+        `🌐 𝐅𝐚𝐜𝐞𝐛𝐨𝐨𝐤 : ${ownerInfo.facebook}`,
+        `✈️ 𝐓𝐞𝐥𝐞𝐠𝐫𝐚𝐦 : ${ownerInfo.telegram}`,
+        `💬 𝐒𝐮𝐩𝐩𝐨𝐫𝐭 : ${ownerInfo.supportGroup}`,
+        "",
+        `🖊️ 𝐄𝐝𝐢𝐭𝐨𝐫 : ${editorInfo.name}`,
+        `💖 ${editorInfo.note}`,
+        "━━━━━━━━━━ ✧ ✦ ✧ ━━━━━━━━━━"
       ].join("\n");
-
 
       await api.sendMessage({
         body: textMsg,
@@ -72,18 +79,17 @@ module.exports = {
 
     } catch (err) {
       console.error("⚠️ Error sending botjoin message:", err);
-      
+
       const fallbackMsg = [
-        "❌ 𝐈𝐦𝐚𝐠𝐞 𝐠𝐞𝐧𝐞𝐫𝐚𝐭𝐢𝐨𝐧 𝐟𝐚𝐢𝐥𝐞𝐝. 𝐇𝐞𝐫𝐞 𝐢𝐬 𝐭𝐡𝐞 𝐢𝐧𝐟𝐨𝐫𝐦𝐚𝐭𝐢𝐨𝐧:",
-        "🎀 𝐓𝐡𝐚𝐧𝐤 𝐲𝐨𝐮 𝐟𝐨𝐫 𝐢𝐧𝐯𝐢𝐭𝐢𝐧𝐠 𝐦𝐞 🎀",
-        `🔹 𝐁𝐨𝐭 𝐩𝐫𝐞𝐟𝐢𝐱: ${prefix}`,
-        `🔸 𝐓𝐲𝐩𝐞: ${prefix}help 𝐭𝐨 𝐬𝐞𝐞 𝐚𝐥𝐥 𝐜𝐨𝐦𝐦𝐚𝐧𝐝𝐬`,
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-        `👑 𝐎𝐰𝐧𝐞𝐫: ${ownerInfo.name}`,
-        `🌐 𝐅𝐚𝐜𝐞𝐛𝐨𝐨𝐤: ${ownerInfo.facebook}`,
-        `✈️ 𝐓𝐞𝐥𝐞𝐠𝐫𝐚𝐦: ${ownerInfo.telegram}`,
-        `🤖 𝐉𝐨𝐢𝐧 𝐒𝐮𝐩𝐩𝐨𝐫𝐭 𝐆𝐂: ${ownerInfo.supportGroup}`
+        "🎀 𝐵𝑜𝑡 𝐽𝑜𝑖𝑛𝑒𝑑 🎀",
+        "",
+        `💠 𝐏𝐫𝐞𝐟𝐢𝐱 : ${prefix}`,
+        "",
+        `👑 𝐎𝐰𝐧𝐞𝐫 : ${ownerInfo.name}`,
+        `🌐 𝐅𝐚𝐜𝐞𝐛𝐨𝐨𝐤 : ${ownerInfo.facebook}`,
+        `💬 𝐒𝐮𝐩𝐩𝐨𝐫𝐭 : ${ownerInfo.supportGroup}`
       ].join("\n");
+
       api.sendMessage(fallbackMsg, threadID);
     }
   }
