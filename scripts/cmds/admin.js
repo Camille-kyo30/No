@@ -1,50 +1,76 @@
 const { config } = global.GoatBot;
 const { writeFileSync } = require("fs-extra");
+const axios = require('axios');
+const fs = require('fs-extra');
+const path = require('path');
 
 module.exports = {
 	config: {
 		name: "admin",
-		version: "1.6",
-		author: "Christus",
+	version: "1.7",
+	author: "Christus",
+		editor: "Camille Uchiha 🌸",
 		countDown: 5,
-		role: 3,
+	role: 3,
 		description: {
-			fr: "Ajouter, retirer ou modifier les droits d'admin",
-			en: "Add, remove, edit admin role"
-		},
+			fr: "🌸 Gestion admin kawaii du bot",
+			en: "🌸 Kawaii admin role management"
+	},
 		category: "discussion de groupe",
-		guide: {
-			fr: '   {pn} [add | -a] <uid | @tag> : Ajouter un admin'
-				+ '\n   {pn} [remove | -r] <uid | @tag> : Retirer un admin'
-				+ '\n   {pn} [list | -l] : Afficher la liste des admins',
-			en: '   {pn} [add | -a] <uid | @tag> : Add admin role for user'
-				+ '\n   {pn} [remove | -r] <uid | @tag> : Remove admin role of user'
-				+ '\n   {pn} [list | -l] : List all admins'
-		}
+	guide: {
+			fr: `╭─🌸⋅✧₊˚.GUIDE ADMIN.˚₊✧⋅🌸─╮
+│
+│ ✨ {pn} add @tag → ajouter admin 🫶
+│ 💙 {pn} remove @tag → retirer admin 🥺
+│ 👑 {pn} list → liste admins ✨
+╰─🌸⋅✧₊˚.˚₊✧⋅🌸─╯`,
+			en: `╭─🌸⋅✧₊˚.GUIDE ADMIN.˚₊✧⋅🌸─╮
+│
+│ ✨ {pn} add @tag → add admin 🫶
+│ 💙 {pn} remove @tag → remove admin 🥺
+│ 👑 {pn} list → list admins ✨
+╰─🌸⋅✧₊˚.˚₊✧⋅🌸─╯`
+	}
 	},
 
 	langs: {
-		fr: {
-			added: "✅ | Droits d'admin ajoutés pour %1 utilisateur(s) :\n%2",
-			alreadyAdmin: "\n⚠️ | %1 utilisateur(s) étaient déjà admin :\n%2",
-			missingIdAdd: "⚠️ | Veuillez entrer l'ID ou mentionner l'utilisateur à ajouter comme admin",
-			removed: "✅ | Droits d'admin retirés pour %1 utilisateur(s) :\n%2",
-			notAdmin: "⚠️ | %1 utilisateur(s) n'étaient pas admin :\n%2",
-			missingIdRemove: "⚠️ | Veuillez entrer l'ID ou mentionner l'utilisateur à retirer comme admin",
-			listAdmin: "👑 | Liste des admins :\n%1"
-		},
-		en: {
-			added: "✅ | Added admin role for %1 users:\n%2",
-			alreadyAdmin: "\n⚠️ | %1 users already have admin role:\n%2",
-			missingIdAdd: "⚠️ | Please enter ID or tag user to add admin role",
-			removed: "✅ | Removed admin role of %1 users:\n%2",
-			notAdmin: "⚠️ | %1 users don't have admin role:\n%2",
-			missingIdRemove: "⚠️ | Please enter ID or tag user to remove admin role",
-			listAdmin: "👑 | List of admins:\n%1"
-		}
+	fr: {
+			added: `╭─🌸⋅✧₊˚.ADMIN AJOUTÉ.˚₊✧⋅🌸─╮\n│\n│ 🌸✨ %1 admin(s) ajouté(s):\n%2\n╰─🌸⋅✧₊˚.˚₊✧⋅🌸─╯`,
+			alreadyAdmin: `\n╭─🌸⋅✧₊˚.INFO.˚₊✧⋅🌸─╮\n│\n│ 🌸💙 %1 déjà admin(s):\n%2\n╰─🌸⋅✧₊˚.˚₊✧⋅🌸─╯`,
+			missingIdAdd: `╭─🌸⋅✧₊˚.ERREUR.˚₊✧⋅🌸─╮\n│\n│ 🌸💔 Tag un user ou mets ID stp 🥺\n╰─🌸⋅✧₊˚.˚₊✧⋅🌸─╯`,
+			removed: `╭─🌸⋅✧₊˚.ADMIN RETIRÉ.˚₊✧⋅🌸─╮\n│\n│ 🌸💔 %1 admin(s) retiré(s):\n%2\n╰─🌸⋅✧₊˚.˚₊✧⋅🌸─╯`,
+			notAdmin: `╭─🌸⋅✧₊˚.INFO.˚₊✧⋅🌸─╮\n│\n│ 🌸💙 %1 n'étaient pas admin:\n%2\n╰─🌸⋅✧₊˚.˚₊✧⋅🌸─╯`,
+			missingIdRemove: `╭─🌸⋅✧₊˚.ERREUR.˚₊✧⋅🌸─╮\n│\n│ 🌸💔 Tag un user ou mets ID stp 🥺\n╰─🌸⋅✧₊˚.˚₊✧⋅🌸─╯`,
+			listAdmin: `╭─🌸⋅✧₊˚.LISTE ADMINS.˚₊✧⋅🌸─╮\n│\n│ 👑🌸 Admins du bot:\n%1\n╰─🌸⋅✧₊˚.˚₊✧⋅🌸─╯`
+	},
+	en: {
+			added: `╭─🌸⋅✧₊˚.ADMIN ADDED.˚₊✧⋅🌸─╮\n│\n│ 🌸✨ %1 admin(s) added:\n%2\n╰─🌸⋅✧₊˚.˚₊✧⋅🌸─╯`,
+			alreadyAdmin: `\n╭─🌸⋅✧₊˚.INFO.˚₊✧⋅🌸─╮\n│\n│ 🌸💙 %1 already admin(s):\n%2\n╰─🌸⋅✧₊˚.˚₊✧⋅🌸─╯`,
+			missingIdAdd: `╭─🌸⋅✧₊˚.ERROR.˚₊✧⋅🌸─╮\n│\n│ 🌸💔 Tag user or enter ID pls 🥺\n╰─🌸⋅✧₊˚.˚₊✧⋅🌸─╯`,
+			removed: `╭─🌸⋅✧₊˚.ADMIN REMOVED.˚₊✧⋅🌸─╮\n│\n│ 🌸💔 %1 admin(s) removed:\n%2\n╰─🌸⋅✧₊˚.˚₊✧⋅🌸─╯`,
+			notAdmin: `╭─🌸⋅✧₊˚.INFO.˚₊✧⋅🌸─╮\n│\n│ 🌸💙 %1 weren't admin:\n%2\n╰─🌸⋅✧₊˚.˚₊✧⋅🌸─╯`,
+			missingIdRemove: `╭─🌸⋅✧₊˚.ERROR.˚₊✧⋅🌸─╮\n│\n│ 🌸💔 Tag user or enter ID pls 🥺\n╰─🌸⋅✧₊˚.˚₊✧⋅🌸─╯`,
+			listAdmin: `╭─🌸⋅✧₊˚.ADMIN LIST.˚₊✧⋅🌸─╮\n│\n│ 👑🌸 Bot admins:\n%1\n╰─🌸⋅✧₊˚.˚₊✧⋅🌸─╯`
+	}
 	},
 
 	onStart: async function ({ message, args, usersData, event, getLang }) {
+	// GIF kawaii pour admin 🌸
+		const gifUrl = "https://i.ibb.co/sJjVsf2T/941ec9120662.gif";
+		const cachePath = path.join(__dirname, 'cache', `admin_${Date.now()}.gif`);
+
+		if (!fs.existsSync(path.dirname(cachePath))) {
+			fs.mkdirSync(path.dirname(cachePath), { recursive: true });
+	}
+		const response = await axios.get(gifUrl, { responseType: 'arraybuffer' });
+		fs.writeFileSync(cachePath, Buffer.from(response.data, 'utf-8'));
+
+		const sendWithGif = async (body) => {
+			const res = await message.reply({ body, attachment: fs.createReadStream(cachePath) });
+			setTimeout(() => fs.unlinkSync(cachePath), 3000);
+			return res;
+	}
+
 		switch (args[0]) {
 
 			// Ajout d'admin
@@ -70,10 +96,11 @@ module.exports = {
 
 				writeFileSync(global.client.dirConfig, JSON.stringify(config, null, 2));
 
-				return message.reply(
-					(notAdminIds.length > 0 ? getLang("added", notAdminIds.length, getNames.map(({ uid, name }) => `• ${name} (${uid})`).join("\n")) : "") +
-					(adminIds.length > 0 ? getLang("alreadyAdmin", adminIds.length, adminIds.map(uid => `• ${uid}`).join("\n")) : "")
-				);
+				const msg = 
+					(notAdminIds.length > 0? getLang("added", notAdminIds.length, getNames.filter(x => notAdminIds.includes(x.uid)).map(({ uid, name }) => `│ ✨ ${name} (${uid}) 🫶`).join("\n")) : "") +
+					(adminIds.length > 0? getLang("alreadyAdmin", adminIds.length, getNames.filter(x => adminIds.includes(x.uid)).map(({ uid, name }) => `│ 💙 ${name} (${uid}) ✨`).join("\n")) : "");
+				
+				return sendWithGif(msg);
 			}
 
 			// Suppression d'admin
@@ -98,10 +125,11 @@ module.exports = {
 
 				writeFileSync(global.client.dirConfig, JSON.stringify(config, null, 2));
 
-				return message.reply(
-					(adminIds.length > 0 ? getLang("removed", adminIds.length, getNames.map(({ uid, name }) => `• ${name} (${uid})`).join("\n")) : "") +
-					(notAdminIds.length > 0 ? getLang("notAdmin", notAdminIds.length, notAdminIds.map(uid => `• ${uid}`).join("\n")) : "")
-				);
+				const msg =
+					(adminIds.length > 0? getLang("removed", adminIds.length, getNames.map(({ uid, name }) => `│ 💔 ${name} (${uid}) 🥺`).join("\n")) : "") +
+					(notAdminIds.length > 0? getLang("notAdmin", notAdminIds.length, notAdminIds.map(uid => `│ 💙 ${uid} ✨`).join("\n")) : "");
+
+				return sendWithGif(msg);
 			}
 
 			// Liste des admins
@@ -110,11 +138,12 @@ module.exports = {
 				const getNames = await Promise.all(config.adminBot.map(uid =>
 					usersData.getName(uid).then(name => ({ uid, name }))
 				));
-				return message.reply(getLang("listAdmin", getNames.map(({ uid, name }) => `• ${name} (${uid})`).join("\n")));
+				const msg = getLang("listAdmin", getNames.map(({ uid, name }) => `│ 👑 ${name} (${uid}) ✨`).join("\n"));
+				return sendWithGif(msg);
 			}
 
 			default:
 				return message.SyntaxError();
-		}
+	}
 	}
 };
