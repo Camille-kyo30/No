@@ -4,39 +4,40 @@ module.exports = {
   config: {
     name: "up",
     aliases: ["upt", "uptime", "rtm"],
-    version: "1.9.9",
+    version: "2.0.0",
     author: "Christus",
+    editor: "Camille Uchiha 🌸",
     usePrefix: false,
     role: 0,
-    shortDescription: { en: "uptime stats" },
+    shortDescription: { en: "🌸 uptime kawaii stats" },
     longDescription: {
-      en: "uptime information"
+      en: "🌸✨ uptime information kawaii mignon 🫶"
     },
     category: "system",
-    guide: { en: "{p}uptime" }
+    guide: { en: `╭─🌸⋅✧₊˚.UPTIME.˚₊✧⋅🌸─╮\n│\n│ ✨ {p}up → voir stats bot\n│ 💙 Version kawaii mignonne~ 🥺\n╰─🌸⋅✧₊˚.˚₊✧⋅🌸─╯` }
   },
 
   onStart: async function ({ api, event, config, usersData, threadsData }) {
     const delay = ms => new Promise(res => setTimeout(res, ms));
     const loadStages = [
-      "🌑 [░░░░░░░░░░░░░░] 0%",
-      "🌒 [▓▓▓▓░░░░░░░░░░] 25%",
-      "🌓 [▓▓▓▓▓▓▓▓░░░░░░] 50%",
-      "🌔 [▓▓▓▓▓▓▓▓▓▓▓▓░░] 75%",
-      "🌕 [▓▓▓▓▓▓▓▓▓▓▓▓▓▓] 100%"
+      "🌸 [░░░░░░] 0%",
+      "🌸✨ [▓░░░░░░] 25%",
+      "🌸✨💙 [▓░░░░░░] 50%",
+      "🌸✨💙🫶 [▓░░] 75%",
+      "🌸✨💙🫶🎉 [▓] 100%"
     ];
 
     try {
-      const loading = await api.sendMessage("🚀 Initializing Uptime Statistics...\n" + loadStages[0], event.threadID);
+      const loading = await api.sendMessage(`╭─🌸⋅✧₊˚.LOADING.˚₊✧⋅🌸─╮\n│\n│ 🌸✨ Initialisation des stats...\n│ ${loadStages[0]}\n╰─🌸⋅✧₊˚.˚₊✧⋅🌸─╯`, event.threadID);
 
       for (let i = 1; i < loadStages.length; i++) {
         await delay(300);
-        await api.editMessage(`🚀 Initializing Uptime Statistics...\n${loadStages[i]}`, loading.messageID, event.threadID);
+        await api.editMessage(`╭─🌸⋅✧₊˚.LOADING.˚₊✧⋅🌸─╮\n│\n│ 🌸✨ Initialisation des stats...\n│ ${loadStages[i]}\n╰─🌸⋅✧₊˚.˚₊✧⋅🌸─╯`, loading.messageID, event.threadID);
       }
 
       const memoryUsage = (process.memoryUsage().rss / 1024 / 1024).toFixed(2);
       const totalMemory = (os.totalmem() / 1024 / 1024).toFixed(2);
-      const freeMemory = (os.freemem() / 1024 / 1024).toFixed(2);
+      const freeMemory = (os.freem() / 1024 / 1024).toFixed(2);
       const memoryUsagePercent = ((memoryUsage / totalMemory) * 100).toFixed(2);
       const cpuModel = os.cpus()[0].model.split('@')[0].trim();
       const cpuSpeed = (os.cpus()[0].speed / 1000).toFixed(1);
@@ -47,12 +48,12 @@ module.exports = {
       const osArch = os.arch();
       const nodeVersion = process.version;
 
-      const botName = (global.GoatBot && global.GoatBot.config && global.GoatBot.config.nickNameBot) || "MyBot";
+      const botName = (global.GoatBot && global.GoatBot.config && global.GoatBot.config.nickNameBot) || "Sakura Bot";
       const prefix = (global.GoatBot && global.GoatBot.config && global.GoatBot.config.prefix) || "/";
       const adminName = "Christus";
 
-      const allUsers = (usersData && typeof usersData.getAll === "function") ? await usersData.getAll() : [];
-      const allThreads = (threadsData && typeof threadsData.getAll === "function") ? await threadsData.getAll() : [];
+      const allUsers = (usersData && typeof usersData.getAll === "function")? await usersData.getAll() : [];
+      const allThreads = (threadsData && typeof threadsData.getAll === "function")? await threadsData.getAll() : [];
 
       const uptime = process.uptime();
       const days = Math.floor(uptime / 86400);
@@ -97,30 +98,40 @@ module.exports = {
       }
 
       const finalMessage = `
-┌────────────────────┐
-│ ⚡ 𝙔𝙊𝙐𝙍 𝘽𝙊𝙏 𝙐𝙋𝙏𝙄𝙈𝙀 ⚡  │
-├────────────────────┤
-│ 🤖 Bot: ${botName}    
-│ 🗝️ Prefix: ${prefix}     
-│ 👑 Admin: ${adminName}  
-├────────────────────┤
-│ 👥 Members: ${allUsers.length.toLocaleString()}
-│ 📂 Groups: ${allThreads.length.toLocaleString()}  
-├────────────────────┤
-│ ⏳ Uptime: ${uptimeFormatted} 
-│ 🖥️ Sys Up: ${sysUptimeFormatted}     
-│ 📅 Date: ${date}      
-│ 🕓 Time: ${time}      
-├────────────────────┤
-│ 💽 Mem: ${memoryUsage}MB / ${totalMemory}MB (${memoryUsagePercent}%)  
-│ 🆓 Free: ${freeMemory}MB  
-│ 🖥 OS: ${platform} ${osArch} ${osRelease} 
-│ 📦 Node: ${nodeVersion} 
-├────────────────────┤
-│ 🛠 CPU: ${cpuModel}   
-│ ⚙️ Cores: ${cpuCores} @ ${cpuSpeed}GHz
-│ 🌍 IP: ${ipAddress}  
-└────────────────────┘
+╭─🌸⋅✧₊˚.BOT UPTIME KAWAII.˚₊✧⋅🌸─╮
+│
+│ 🌸✨ 𝙔𝙊𝙐𝙍 𝘽𝙊𝙏 𝙄𝙎 𝙇𝙄𝙑𝙀~ 🫶
+│
+│ 🤖 Bot: ${botName} 💙
+│ 🗝️ Prefix: ${prefix} ✨
+│ 👑 Admin: ${adminName} 👑
+│
+├─🌸⋅✧₊˚.STATS.˚₊✧⋅🌸─┤
+│
+│ 👥 Members: ${allUsers.length.toLocaleString()} 🥺
+│ 📂 Groups: ${allThreads.length.toLocaleString()} 🫶
+│
+├─🌸⋅✧₊˚.UPTIME.˚₊✧⋅🌸─┤
+│
+│ ⏳ Bot Up: ${uptimeFormatted} ✨
+│ 🖥️ Sys Up: ${sysUptimeFormatted} 💙
+│ 📅 Date: ${date}
+│ 🕓 Time: ${time} 🌸
+│
+├─🌸⋅✧₊˚.SYSTEM.˚₊✧⋅🌸─┤
+│
+│ 💽 RAM: ${memoryUsage}MB / ${totalMemory}MB (${memoryUsagePercent}%)
+│ 🆓 Free: ${freeMemory}MB ✨
+│ 🖥️ OS: ${platform} ${osArch}
+│ 📦 Node: ${nodeVersion} 💙
+│
+├─🌸⋅✧₊˚.CPU.˚₊✧⋅🌸─┤
+│
+│ 🛠️ CPU: ${cpuModel}
+│ ⚙️ Cores: ${cpuCores} @ ${cpuSpeed}GHz 🫶
+│ 🌍 IP: ${ipAddress} ✨
+│
+╰─🌸⋅✧₊˚.˚₊✧⋅🌸─╯
 `.trim();
 
       await delay(500);
@@ -128,7 +139,7 @@ module.exports = {
 
     } catch (err) {
       console.error("Uptime error:", err);
-      await api.sendMessage("❌ An error occurred while fetching uptime statistics. Please try again later.", event.threadID);
+      await api.sendMessage(`╭─🌸⋅✧₊˚.ERREUR.˚₊✧⋅🌸─╮\n│\n│ 🌸💔 Erreur stats stp 🥺\n│ 📝 Réessaie plus tard~ 💙\n╰─🌸⋅✧₊˚.˚₊✧⋅🌸─╯`, event.threadID);
     }
   }
 };
