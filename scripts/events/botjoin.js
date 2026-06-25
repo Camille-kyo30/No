@@ -19,7 +19,7 @@ module.exports = {
     name: "botjoin",
     version: "2.0",
     author: "Saimx69x",
-    editor: editorInfo.name,
+    editor: "Camille",
     category: "events"
   },
 
