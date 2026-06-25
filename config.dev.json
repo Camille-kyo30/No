@@ -25,15 +25,15 @@
     "ignoreCommand": []
   },
   "adminBot": [
-    "61577875842514",
+    "61591108301616"
     ""
   ],
   "developer": [
-    "61577875842514",
+    "61591108301616"
     ""
   ],
   "vipuser": [
-    "61577875842514",
+    "61591108301616"
     ""
   ],
   "reactBy": {
@@ -45,7 +45,7 @@
     "whiteListIds": [],
     "notes": "if you enable this feature, only the ids in the whiteListIds section can use the bot"
   },
-  "nickNameBot":"۝Mini-bot",
+  "nickNameBot":"@ʚʆɞ Camille Uchiha ʚʆɞ",
   "prefix":"¥",
   "database": {
     "type": "mongodb",
