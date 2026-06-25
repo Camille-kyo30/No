@@ -1,170 +1,179 @@
-const { createCanvas, loadImage } = require("canvas");
-const fs = require("fs");
+const fs = require("fs-extra");
 const path = require("path");
 const axios = require("axios");
+const { createCanvas, loadImage } = require("canvas");
 
 module.exports = {
-  config: {
-    name: "balance",
-    aliases: ["bal", "$", "cash"],
-    version: "5.1",
-    author: "Christus",
-    countDown: 3,
-    role: 0,
-    description: "💰 Système économique stylé avec transfert",
-    category: "economy",
-    guide: {
-      fr: "{pn} - voir ton solde\n{pn} @utilisateur - voir le solde d'un autre\n{pn} t @utilisateur montant - transférer de l'argent"
-    }
-  },
+    config: {
+        name: "balance",
+        aliases: ["bal", "money", "tk", "coin", "cash"],
+        version: "1.8",
+        author: "Chitron Bhattacharjee",
+        editor: "Camille Uchiha 🌸",
+        countDown: 3,
+        role: 0,
+        shortDescription: {
+            en: "🌸 Check ton argent kawaii avec card mignonne ✨"
+        },
+        longDescription: {
+            en: "Affiche ton solde ou celui d'un Hunter en style anime kawaii + image personnalisée 💙"
+        },
+        category: "💼 Economy",
+        guide: {
+            en: `🌸 GUIDE MINI BAL ✨
++bal → Voir ton argent
++bal @tag → Voir argent d'un Hunter
++bal <uid> → Voir par ID [admin only]`
+        },
+        usePrefix: true,
+        useChat: true,
+    },
 
-  onStart: async function ({ message, event, args, usersData }) {
-    const { senderID, mentions, messageReply } = event;
+    onStart: async function ({ event, args, message, usersData, api, role }) {
+        let targetID = event.senderID;
 
-    // --- Formatage de l'argent ---
-    const formatMoney = (amount) => {
-      if (isNaN(amount)) return "0$";
-      amount = Number(amount);
-      const scales = [
-        { value: 1e15, suffix: 'Q' },
-        { value: 1e12, suffix: 'T' },
-        { value: 1e9, suffix: 'B' },
-        { value: 1e6, suffix: 'M' },
-        { value: 1e3, suffix: 'k' }
-      ];
-      const scale = scales.find(s => amount >= s.value);
-      if (scale) return `${(amount / scale.value).toFixed(1)}${scale.suffix}$`;
-      return `${amount.toLocaleString()}$`;
-    };
+        if (args.length > 0) {
+            if (event.mentions && Object.keys(event.mentions).length > 0) {
+                targetID = Object.keys(event.mentions)[0];
+            } else if (/^\d{5,20}$/.test(args[0])) {
+                if (role === 2) targetID = args[0];
+                else return message.reply("🌸🔒 Aïe~ Seul le boss peut voir l'argent des autres 🥺");
+            }
+        }
 
-    // --- Récupération sécurisée de l'avatar ---
-    const fetchAvatar = async (userID) => {
-      try {
-        let avatarURL = `https://graph.facebook.com/${userID}/picture?type=large&width=500&height=500&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`;
-        const res = await axios.get(avatarURL, { responseType: "arraybuffer", timeout: 10000 });
-        return await loadImage(Buffer.from(res.data));
-      } catch (e) {
-        const size = 100;
-        const canvas = createCanvas(size, size);
-        const ctx = canvas.getContext("2d");
-        ctx.fillStyle = "#3b0066";
-        ctx.fillRect(0, 0, size, size);
-        ctx.fillStyle = "#fff";
-        ctx.font = `bold ${size / 2}px Arial`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(userID.charAt(0).toUpperCase(), size / 2, size / 2);
-        return canvas;
-      }
-    };
+        const name = await usersData.getName(targetID) || "Hunter Mystère";
+        const balance = (await usersData.get(targetID, "money")) || 0;
 
-    // === TRANSFERT D'ARGENT ===
-    if (args[0]?.toLowerCase() === "t") {
-      let targetID = Object.keys(mentions)[0] || messageReply?.senderID;
-      const amountRaw = args.find(a => !isNaN(a));
-      const amount = parseFloat(amountRaw);
+        // Text reply mignon
+        const replyText =
+`🌸✨ 𝗕𝗔𝗟𝗔𝗡𝗖𝗘 𝗞𝗔𝗪𝗔𝗜 ✨🌸
+━━━━━━━━━━━━━━━
+💙 Hunter: ${name}
+🆔 ID: ${targetID}
+💰 Argent: ＄${balance.toLocaleString()} 💸
+━━━━━━━━━━━━━━━
+✨ Reste mignon et riche~ 🫶`;
 
-      if (!targetID || isNaN(amount)) return message.reply("❌ Usage : !bal t @utilisateur montant");
-      if (targetID === senderID) return message.reply("❌ Vous ne pouvez pas vous envoyer de l'argent.");
-      if (amount <= 0) return message.reply("❌ Le montant doit être supérieur à 0.");
+        await message.reply(replyText);
 
-      const sender = await usersData.get(senderID);
-      const receiver = await usersData.get(targetID);
-      if (!receiver) return message.reply("❌ Utilisateur cible introuvable.");
+        try {
+            let avatarURL = await usersData.getAvatarUrl(targetID);
+            if (!avatarURL) avatarURL = "https://i.imgur.com/4NZ6uLY.jpg";
 
-      const taxRate = 5;
-      const tax = Math.ceil(amount * taxRate / 100);
-      const total = amount + tax;
+            const width = 450;
+            const height = 200;
+            const canvas = createCanvas(width, height);
+            const ctx = canvas.getContext("2d");
 
-      if (sender.money < total) return message.reply(
-        `❌ Fonds insuffisants.\nNécessaire : ${formatMoney(total)}\nVous avez : ${formatMoney(sender.money)}`
-      );
+            // Background gradient kawaii pink -> purple
+            const gradient = ctx.createLinearGradient(0, 0, width, height);
+            gradient.addColorStop(0, "#FFB6E6");
+            gradient.addColorStop(0.5, "#FF69B4");
+            gradient.addColorStop(1, "#D580FF");
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, width, height);
 
-      await Promise.all([
-        usersData.set(senderID, { ...sender, money: sender.money - total }),
-        usersData.set(targetID, { ...receiver, money: receiver.money + amount })
-      ]);
+            // Bordure mignonne
+            ctx.strokeStyle = "#FFFFFF";
+            ctx.lineWidth = 4;
+            ctx.strokeRect(2, 2, width-4, height-4);
 
-      const receiverName = await usersData.getName(targetID);
-      return message.reply(
-        `✅ Transfert réussi ! 💸
-➤ Vers : ${receiverName}
-➤ Montant envoyé : ${formatMoney(amount)}
-➤ Taxe : ${formatMoney(tax)}
-➤ Total débité : ${formatMoney(total)}`
-      );
-    }
+            const avatarResp = await axios.get(avatarURL, { responseType: "arraybuffer" });
+            const avatarImg = await loadImage(Buffer.from(avatarResp.data, "binary"));
 
-    // === CARTE DE SOLDE ===
-    let targetID;
-    if (Object.keys(mentions).length > 0) targetID = Object.keys(mentions)[0];
-    else if (messageReply) targetID = messageReply.senderID;
-    else targetID = senderID;
+            const avatarSize = 130;
+            const avatarX = 25;
+            const avatarY = (height - avatarSize) / 2;
 
-    const name = await usersData.getName(targetID);
-    const money = await usersData.get(targetID, "money") || 0;
-    const avatar = await fetchAvatar(targetID);
+            // Avatar cercle avec ombre kawaii
+            ctx.save();
+            ctx.shadowColor = "rgba(0,0,0,0.3)";
+            ctx.shadowBlur = 15;
+            ctx.beginPath();
+            ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.clip();
+            ctx.drawImage(avatarImg, avatarX, avatarY, avatarSize, avatarSize);
+            ctx.restore();
 
-    const width = 700, height = 300;
-    const canvas = createCanvas(width, height);
-    const ctx = canvas.getContext("2d");
+            // Bordure avatar blanche épaisse
+            ctx.beginPath();
+            ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
+            ctx.lineWidth = 5;
+            ctx.strokeStyle = "#FFFFFF";
+            ctx.stroke();
 
-    // --- Fond dégradé stylé ---
-    const gradient = ctx.createLinearGradient(0, 0, width, height);
-    gradient.addColorStop(0, "#0f2027");
-    gradient.addColorStop(0.5, "#203a43");
-    gradient.addColorStop(1, "#2c5364");
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, width, height);
+            // Couleurs mignonnes
+            const nameColors = ["#FF1493", "#FF69B4", "#C71585", "#FF00FF"];
+            const balanceColors = ["#32CD32", "#00CED1", "#FFD700", "#FF6347", "#ADFF2F"];
 
-    // Carte transparente
-    ctx.fillStyle = "rgba(255,255,255,0.08)";
-    ctx.fillRect(40, 40, width - 80, height - 80);
+            const baseY = avatarY + avatarSize / 2 - 35;
 
-    // Bordure dorée
-    ctx.strokeStyle = "#FFD700";
-    ctx.lineWidth = 4;
-    ctx.strokeRect(40, 40, width - 80, height - 80);
+            // Nom avec couleur aléatoire kawaii
+            ctx.font = "bold 26px 'Segoe UI', Arial";
+            ctx.fillStyle = nameColors[Math.floor(Math.random() * nameColors.length)];
+            ctx.textAlign = "left";
+            ctx.shadowColor = "rgba(0,0,0,0.2)";
+            ctx.shadowBlur = 3;
+            ctx.fillText(name, avatarX + avatarSize + 25, baseY);
 
-    // Avatar rond
-    const avatarSize = 100;
-    const avatarX = 70, avatarY = 130;
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
-    ctx.clip();
-    ctx.drawImage(avatar, avatarX, avatarY, avatarSize, avatarSize);
-    ctx.restore();
+            // ID en blanc
+            ctx.shadowBlur = 0;
+            ctx.font = "18px 'Segoe UI'";
+            ctx.fillStyle = "#FFFFFF";
+            ctx.fillText(`🆔 ${targetID}`, avatarX + avatarSize + 25, baseY + 32);
 
-    // Titre
-    ctx.fillStyle = "#FFD700";
-    ctx.font = "bold 36px Arial";
-    ctx.textAlign = "center";
-    ctx.fillText("⚡ Carte de Solde ⚡", width / 2, 80);
+            // Label Balance
+            ctx.font = "bold 22px 'Segoe UI'";
+            ctx.fillStyle = "#FFF0F5";
+            ctx.fillText("💰 Balance:", avatarX + avatarSize + 25, baseY + 65);
 
-    // Nom de l'utilisateur
-    ctx.fillStyle = "#FFFFFF";
-    ctx.font = "bold 32px Arial";
-    ctx.textAlign = "left";
-    ctx.fillText(`💎 ${name}`, 200, 160);
+            // Montant avec couleur aléatoire + sparkle
+            const balanceText = `＄${balance.toLocaleString()}`;
+            ctx.font = "bold 28px 'Segoe UI'";
+            ctx.fillStyle = balanceColors[Math.floor(Math.random() * balanceColors.length)];
+            ctx.fillText(balanceText, avatarX + avatarSize + 25, baseY + 100);
 
-    // ID utilisateur
-    ctx.font = "22px Arial";
-    ctx.fillStyle = "#AAAAAA";
-    ctx.fillText(`🆔 ${targetID}`, 200, 200);
+            // Emojis sparkle kawaii
+            ctx.font = "45px Arial";
+            ctx.fillStyle = "#FFF";
+            ctx.fillText("✨", width - 55, 45);
+            ctx.fillText("🌸", width - 75, 100);
+            ctx.fillText("💎", width - 55, 155);
+            ctx.fillText("🫶", 10, height - 10);
 
-    // Solde
-    ctx.font = "bold 44px Arial";
-    ctx.fillStyle = "#00FF7F";
-    ctx.textAlign = "center";
-    ctx.fillText(`${formatMoney(money)}`, width / 2, 250);
+            // Save image
+            const imgBuffer = canvas.toBuffer("image/png");
+            const imgPath = path.join(__dirname, "cache", `balance_${targetID}.png`);
 
-    const filePath = path.join(__dirname, "balance_card.png");
-    fs.writeFileSync(filePath, canvas.toBuffer("image/png"));
+            await fs.ensureDir(path.dirname(imgPath));
+            await fs.writeFile(imgPath, imgBuffer);
 
-    return message.reply({
-      body: `⚡ Infos de solde pour ${name} ⚡`,
-      attachment: fs.createReadStream(filePath)
-    });
-  }
+            api.sendMessage(
+                {
+                    body: `🌸✨ Voici ta carte de balance kawaii! 💙\nReste riche Hunter~ 🫶`,
+                    attachment: fs.createReadStream(imgPath),
+                },
+                event.threadID
+            );
+
+            // Delete après 10s pour clean
+            setTimeout(() => fs.unlink(imgPath).catch(() => {}), 10000);
+        } catch (err) {
+            console.error("Balance image error:", err);
+            message.reply("🌸 Aïe~ Erreur génération image~ Mais ton argent est safe 💙");
+        }
+    },
+
+    onChat: async function ({ event, message }) {
+        const body = event.body?.toLowerCase();
+        if (!body) return;
+
+        if (["bal", "balance", "money", "tk", "coin", "cash"].includes(body.trim())) {
+            return this.onStart({ event, message, args: [], usersData: global.GoatBot.usersData, api: global.GoatBot.api, role: 0 });
+        } else if (body.startsWith("bal ")) {
+            const args = body.trim().split(/\s+/).slice(1);
+            return this.onStart({ event, message, args, usersData: global.GoatBot.usersData, api: global.GoatBot.api, role: 0 });
+        }
+    },
 };
