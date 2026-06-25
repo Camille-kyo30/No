@@ -1,4 +1,7 @@
 const { commands, aliases } = global.GoatBot;
+const axios = require('axios');
+const fs = require('fs-extra');
+const path = require('path');
 
 // --- Fonction pour transformer un texte en style 𝑨𝒁 ---
 function toAZStyle(text) {
@@ -18,13 +21,20 @@ function toAZStyle(text) {
 module.exports = {
   config: {
     name: "help",
-    version: "5.2",
+    version: "5.4",
     author: "Christus",
+    editor: "Camille Uchiha 🌸",
     countDown: 2,
     role: 0,
-    shortDescription: { en: "𝐸𝑥𝑝𝑙𝑜𝑟𝑒 𝑎𝑙𝑙 𝑏𝑜𝑡 𝑐𝑜𝑚𝑚𝑎𝑛𝑑𝑠" },
+    shortDescription: { en: "🌸 explore commandes kawaii" },
     category: "info",
-    guide: { en: "help <command> — 𝐠𝐞𝐭 𝐜𝐨𝐦𝐦𝐚𝐧𝐝 𝐢𝐧𝐟𝐨, -ai 𝐟𝐨𝐫 𝐬𝐦𝐚𝐫𝐭 𝐬𝐮𝐠𝐠𝐞𝐬𝐭𝐢𝐨𝐧𝐬" },
+    guide: { en: `╭─🌸⋅✧₊˚.GUIDE HELP.˚₊✧⋅🌸─╮
+│
+│ ✨ {pn} → liste commandes 🫶
+│ ✨ {pn} <cmd> → info commande 💙
+│ ✨ {pn} -s <mot> → recherche 🥺
+│ ✨ {pn} -ai <mot> → suggestion IA ✨
+╰─🌸⋅✧₊˚.˚₊✧⋅🌸─╯` },
   },
 
   onStart: async function ({ message, args, event, usersData }) {
@@ -33,16 +43,27 @@ module.exports = {
       let avatar = await usersData.getAvatarUrl(uid).catch(() => null);
       if (!avatar) avatar = "https://i.imgur.com/TPHk4Qu.png";
 
+      // GIF kawaii pour help 🌸
+      const gifUrl = "https://i.ibb.co/sJjVsf2T/941ec9120662.gif";
+      const cachePath = path.join(__dirname, 'cache', `help_${Date.now()}.gif`);
+
+      // Télécharger GIF
+      if (!fs.existsSync(path.dirname(cachePath))) {
+        fs.mkdirSync(path.dirname(cachePath), { recursive: true });
+      }
+      const response = await axios.get(gifUrl, { responseType: 'arraybuffer' });
+      fs.writeFileSync(cachePath, Buffer.from(response.data, 'utf-8'));
+
       const autoDelete = async (msgID, delay = 15000) => {
         const countdown = [10,5,3,2,1];
         countdown.forEach((s) => {
           setTimeout(() => {
-            message.edit(msgID, `⏳ 𝐒𝐮𝐩𝐩𝐫𝐞𝐬𝐬𝐢𝐨𝐧 𝐝𝐚𝐧𝐬 ${s}s...`);
+            message.edit(msgID, `╭─🌸⋅✧₊˚.SUPPRESSION.˚₊✧⋅🌸─╮\n│\n│ 🌸⏳ Suppression dans ${s}s... 🥺\n╰─🌸⋅✧₊˚.˚₊✧⋅🌸─╯`);
           }, delay - s*1000);
         });
         setTimeout(async () => {
-          try { await message.unsend(msgID); } 
-          catch (err) { console.error("❌ 𝐇𝐞𝐥𝐩 𝐝𝐞𝐥𝐞𝐭𝐞 𝐞𝐫𝐫𝐨𝐫:", err.message); }
+          try { await message.unsend(msgID); }
+          catch (err) { console.error("❌ 𝐇𝐞𝐥𝐩 𝐝𝐞𝐥𝐞𝐭𝐞 𝐞𝐫𝐨𝐫:", err.message); }
         }, delay);
       };
 
@@ -51,28 +72,39 @@ module.exports = {
         const keyword = args[1]?.toLowerCase() || "";
         const allCmds = Array.from(commands.keys());
         const suggestions = allCmds
-          .map(cmd => ({ cmd, match: Math.max(40, 100 - Math.abs(cmd.length - keyword.length) * 10) }))
-          .filter(c => c.cmd.includes(keyword))
-          .sort((a,b)=>b.match - a.match)
-          .slice(0,10);
+        .map(cmd => ({ cmd, match: Math.max(40, 100 - Math.abs(cmd.length - keyword.length) * 10) }))
+        .filter(c => c.cmd.includes(keyword))
+        .sort((a,b)=>b.match - a.match)
+        .slice(0,10);
 
         if(!suggestions.length) {
-          const res = await message.reply({ body:"❌ 𝐍𝐨 𝐬𝐮𝐠𝐠𝐞𝐬𝐭𝐢𝐨𝐧𝐬 𝐟𝐨𝐮𝐧𝐝.", attachment: await global.utils.getStreamFromURL(avatar)});
+          const res = await message.reply({
+            body:`╭─🌸⋅✧₊˚.AI SUGGESTION.˚₊✧⋅🌸─╮\n│\n│ 🌸💔 Aucune suggestion trouvée 🥺\n╰─🌸⋅✧₊˚.˚₊✧⋅🌸─╯`,
+            attachment: fs.createReadStream(cachePath)
+          });
+          setTimeout(() => fs.unlinkSync(cachePath), 3000);
           return autoDelete(res.messageID);
         }
 
         const body = [
-          "🤖 𝐀𝐈 𝐒𝐮𝐠𝐠𝐞𝐬𝐭𝐢𝐨𝐧𝐬:",
-          ...suggestions.map(s=>`• ${toAZStyle(s.cmd)} (${s.match}% 𝐦𝐚𝐭𝐜𝐡)`)
+          `╭─🌸⋅✧₊˚.AI SUGGESTIONS.˚₊✧⋅🌸─╮`,
+          `│`,
+          `│ 🤖🌸 Suggestions IA pour toi~ 🫶`,
+          `│`,
+        ...suggestions.map(s=>`│ ✨ ${toAZStyle(s.cmd)} → ${s.match}% match 💙`),
+          `│`,
+          `╰─🌸⋅✧₊˚.˚₊✧⋅🌸─╯`
         ].join("\n");
 
-        const res = await message.reply({ body, attachment: await global.utils.getStreamFromURL(avatar) });
+        const res = await message.reply({ body, attachment: fs.createReadStream(cachePath) });
+        setTimeout(() => fs.unlinkSync(cachePath), 3000);
         return autoDelete(res.messageID);
       }
 
       // --- Command List ---
       if(!args || args.length === 0) {
-        let body = "📚 𝐺𝑂𝐴𝑇 𝐵𝑂𝑇 𝐶𝑂𝑀𝑀𝐴𝑁𝐷𝑆\n\n";
+        let body = `╭─🌸⋅✧₊˚.GOAT BOT COMMANDS.˚₊✧⋅🌸─╮\n│\n│ 🌸✨ Liste des commandes bot 🫶\n│\n`;
+
         const categories = {};
         for(let [name, cmd] of commands) {
           const cat = cmd.config.category || "Misc";
@@ -81,16 +113,18 @@ module.exports = {
         }
 
         for(const cat of Object.keys(categories).sort()) {
-          const list = categories[cat].sort().map(c=>`• ${toAZStyle(c)}`).join("  ");
-          body += `🍓 ${cat}\n${list || "𝐍𝐨 𝐜𝐨𝐦𝐦𝐚𝐧𝐝𝐬"}\n\n`;
+          const list = categories[cat].sort().map(c=>`│ ✨ ${toAZStyle(c)} 💙`).join("\n");
+          body += `│ 🍓 ${toAZStyle(cat)} 🥺\n${list || "│ 🌸💔 Aucune commande"}\n│ ────────────────\n`;
         }
 
-        body += `📊 𝐓𝐨𝐭𝐚𝐥 𝐂𝐨𝐦𝐦𝐚𝐧𝐝𝐬: ${commands.size}\n`;
-        body += `🔧 𝐂𝐨𝐦𝐦𝐚𝐧𝐝 𝐈𝐧𝐟𝐨: .help <command>\n`;
-        body += `🔍 𝐒𝐞𝐚𝐫𝐜𝐡: .help -s <keyword>\n`;
-        body += `🤖 𝐀𝐈 𝐒𝐮𝐠𝐠𝐞𝐬𝐭: .help -ai <command>\n`;
+        body += `│\n│ 📊 Total: ${commands.size} commandes ✨\n`;
+        body += `│ 💙 Info:.help <command> 🫶\n`;
+        body += `│ 🥺 Search:.help -s <mot> ✨\n`;
+        body += `│ 🤖 IA:.help -ai <mot> 💙\n`;
+        body += `╰─🌸⋅✧₊˚.˚₊✧⋅🌸─╯`;
 
-        const res = await message.reply({ body, attachment: await global.utils.getStreamFromURL(avatar)});
+        const res = await message.reply({ body, attachment: fs.createReadStream(cachePath) });
+        setTimeout(() => fs.unlinkSync(cachePath), 3000);
         return autoDelete(res.messageID);
       }
 
@@ -98,33 +132,44 @@ module.exports = {
       const query = args[0].toLowerCase();
       const command = commands.get(query) || commands.get(aliases.get(query));
       if(!command) {
-        const res = await message.reply({ body:`❌ 𝐂𝐨𝐦𝐦𝐚𝐧𝐝 "${query}" 𝐧𝐨𝐭 𝐟𝐨𝐮𝐧𝐝.`, attachment: await global.utils.getStreamFromURL(avatar)});
+        const res = await message.reply({
+          body:`╭─🌸⋅✧₊˚.ERREUR.˚₊✧⋅🌸─╮\n│\n│ 🌸💔 Commande "${query}" introuvable 🥺\n╰─🌸⋅✧₊˚.˚₊✧⋅🌸─╯`,
+          attachment: fs.createReadStream(cachePath)
+        });
+        setTimeout(() => fs.unlinkSync(cachePath), 3000);
         return autoDelete(res.messageID);
       }
 
       const cfg = command.config || {};
-      const roleMap = {0:"𝐀𝐥𝐥 𝐔𝐬𝐞𝐫𝐬",1:"𝐆𝐫𝐨𝐮𝐩 𝐀𝐝𝐦𝐢𝐧𝐬",2:"𝐁𝐨𝐭 𝐀𝐝𝐦𝐢𝐧𝐬"};
-      const aliasesList = Array.isArray(cfg.aliases) && cfg.aliases.length ? cfg.aliases.map(a=>toAZStyle(a)).join(", ") : "𝐍𝐨𝐧𝐞";
-      const desc = cfg.longDescription?.en || cfg.shortDescription?.en || "𝐍𝐨 𝐝𝐞𝐬𝐜𝐫𝐢𝐩𝐭𝐢𝐨𝐧.";
+      const roleMap = {0:"🌸 Tous",1:"💙 Admin Groupe",2:"👑 Admin Bot"};
+      const aliasesList = Array.isArray(cfg.aliases) && cfg.aliases.length? cfg.aliases.map(a=>toAZStyle(a)).join(", ") : "Aucun";
+      const desc = cfg.longDescription?.en || cfg.shortDescription?.en || "Aucune description.";
       const usage = cfg.guide?.en || cfg.name;
 
       const card = [
-        `✨ ${toAZStyle(cfg.name)} ✨`,
-        `📝 𝐃𝐞𝐬𝐜𝐫𝐢𝐩𝐭𝐢𝐨𝐧: ${desc}`,
-        `📂 𝐂𝐚𝐭𝐞𝐠𝐨𝐫𝐲: ${cfg.category || "Misc"}`,
-        `🔤 𝐀𝐥𝐢𝐚𝐬𝐞𝐬: ${aliasesList}`,
-        `🛡️ 𝐑𝐨𝐥𝐞: ${roleMap[cfg.role] || "Unknown"} | ⏱️ 𝐂𝐨𝐨𝐥𝐝𝐨𝐰𝐧: ${cfg.countDown || 1}s`,
-        `🚀 𝐕𝐞𝐫𝐬𝐢𝐨𝐧: ${cfg.version || "1.0"} | 👨‍💻 𝐀𝐮𝐭𝐡𝐨𝐫: ${cfg.author || "Unknown"}`,
-        `💡 𝐔𝐬𝐚𝐠𝐞: .${toAZStyle(usage)}`,
-        `🔧 𝐎𝐩𝐭𝐢𝐨𝐧𝐬: .help ${toAZStyle(cfg.name.toLowerCase())} [-u | -i | -a]`
+        `╭─🌸⋅✧₊˚.INFO COMMANDE.˚₊✧⋅🌸─╮`,
+        `│`,
+        `│ ✨ ${toAZStyle(cfg.name)} ✨`,
+        `│ ────────────────`,
+        `│ 📝 Desc: ${desc} 🥺`,
+        `│ 📂 Cat: ${cfg.category || "Misc"} 💙`,
+        `│ 🔤 Alias: ${aliasesList} ✨`,
+        `│ 🛡️ Role: ${roleMap[cfg.role] || "Unknown"} 🫶`,
+        `│ ⏱️ Cooldown: ${cfg.countDown || 1}s 💙`,
+        `│ 🚀 Version: ${cfg.version || "1.0"} ✨`,
+        `│ 👨‍💻 Author: ${cfg.author || "Unknown"} 🥺`,
+        `│ 💡 Usage:.${toAZStyle(usage)} 🫶`,
+        `│ 🔧 Options:.help ${toAZStyle(cfg.name.toLowerCase())} [-u | -i | -a] 💙`,
+        `╰─🌸⋅✧₊˚.˚₊✧⋅🌸─╯`
       ].join("\n");
 
-      const res = await message.reply({ body: card, attachment: await global.utils.getStreamFromURL(avatar)});
+      const res = await message.reply({ body: card, attachment: fs.createReadStream(cachePath) });
+      setTimeout(() => fs.unlinkSync(cachePath), 3000);
       return autoDelete(res.messageID);
 
     } catch(err) {
       console.error("HELP CMD ERROR:", err);
-      await message.reply(`⚠️ 𝐄𝐫𝐫𝐨𝐫: ${err.message || err}`);
+      await message.reply(`╭─🌸⋅✧₊˚.ERREUR.˚₊✧⋅🌸─╮\n│\n│ 🌸💔 Erreur: ${err.message || err} 🥺\n╰─🌸⋅✧₊˚.˚₊✧⋅🌸─╯`);
     }
   }
 };
