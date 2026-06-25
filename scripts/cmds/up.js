@@ -1,20 +1,23 @@
 const os = require("os");
+const axios = require('axios');
+const fs = require('fs-extra');
+const path = require('path');
 
 module.exports = {
   config: {
     name: "up",
     aliases: ["upt", "uptime", "rtm"],
-    version: "2.0.0",
+    version: "2.1.0",
     author: "Christus",
     editor: "Camille Uchiha 🌸",
     usePrefix: false,
     role: 0,
-    shortDescription: { en: "🌸 uptime kawaii stats" },
+    shortDescription: { en: "🌸 uptime kawaii + GIF" },
     longDescription: {
-      en: "🌸✨ uptime information kawaii mignon 🫶"
+      en: "🌸✨ uptime information kawaii avec GIF 🫶"
     },
     category: "system",
-    guide: { en: `╭─🌸⋅✧₊˚.UPTIME.˚₊✧⋅🌸─╮\n│\n│ ✨ {p}up → voir stats bot\n│ 💙 Version kawaii mignonne~ 🥺\n╰─🌸⋅✧₊˚.˚₊✧⋅🌸─╯` }
+    guide: { en: `╭─🌸⋅✧₊˚.UPTIME.˚₊✧⋅🌸─╮\n│\n│ ✨ {p}up → voir stats bot\n│ 🎉 Avec GIF kawaii mignon~ 🥺\n╰─🌸⋅✧₊˚.˚₊✧⋅🌸─╯` }
   },
 
   onStart: async function ({ api, event, config, usersData, threadsData }) {
@@ -26,6 +29,10 @@ module.exports = {
       "🌸✨💙🫶 [▓░░] 75%",
       "🌸✨💙🫶🎉 [▓] 100%"
     ];
+
+    // GIF kawaii pour uptime 🥺
+    const gifUrl = "https://i.ibb.co/GfM3tTdj/ae12b7941d73.gif";
+    const cachePath = path.join(__dirname, 'cache', `up_${Date.now()}.gif`);
 
     try {
       const loading = await api.sendMessage(`╭─🌸⋅✧₊˚.LOADING.˚₊✧⋅🌸─╮\n│\n│ 🌸✨ Initialisation des stats...\n│ ${loadStages[0]}\n╰─🌸⋅✧₊˚.˚₊✧⋅🌸─╯`, event.threadID);
@@ -43,7 +50,6 @@ module.exports = {
       const cpuSpeed = (os.cpus()[0].speed / 1000).toFixed(1);
       const cpuCores = os.cpus().length;
       const platform = os.platform();
-      const osType = os.type();
       const osRelease = os.release();
       const osArch = os.arch();
       const nodeVersion = process.version;
@@ -70,18 +76,12 @@ module.exports = {
 
       const now = new Date();
       const date = now.toLocaleDateString("en-US", {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
         timeZone: "Asia/Dhaka"
       });
 
       const time = now.toLocaleTimeString("en-US", {
-        hour12: true,
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
+        hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit',
         timeZone: "Asia/Dhaka"
       });
 
@@ -97,7 +97,15 @@ module.exports = {
         }
       }
 
-      const finalMessage = `
+      // Télécharger GIF kawaii
+      if (!fs.existsSync(path.dirname(cachePath))) {
+        fs.mkdirSync(path.dirname(cachePath), { recursive: true });
+      }
+      const response = await axios.get(gifUrl, { responseType: 'arraybuffer' });
+      fs.writeFileSync(cachePath, Buffer.from(response.data, 'utf-8'));
+
+      const finalMessage = {
+        body: `
 ╭─🌸⋅✧₊˚.BOT UPTIME KAWAII.˚₊✧⋅🌸─╮
 │
 │ 🌸✨ 𝙔𝙊𝙐𝙍 𝘽𝙊𝙏 𝙄𝙎 𝙇𝙄𝙑𝙀~ 🫶
@@ -132,10 +140,13 @@ module.exports = {
 │ 🌍 IP: ${ipAddress} ✨
 │
 ╰─🌸⋅✧₊˚.˚₊✧⋅🌸─╯
-`.trim();
+`.trim(),
+        attachment: fs.createReadStream(cachePath)
+      };
 
       await delay(500);
       await api.editMessage(finalMessage, loading.messageID, event.threadID);
+      fs.unlinkSync(cachePath);
 
     } catch (err) {
       console.error("Uptime error:", err);
